@@ -82,7 +82,7 @@ public class EntityMoonball extends EntityThrowable implements IEntityAdditional
                 return;
             }
             if (!getEntityWorld().isRemote) {
-                result.entityHit.attackEntityFrom(Moonball.MOONBALL_DAMAGE, (float) (4 * velSq));
+                result.entityHit.attackEntityFrom(new DamageSourceMoonball(this.thrower, this), (float) (4 * velSq));
                 this.setDead();
             }
         } else if (result.typeOfHit == Type.BLOCK) {
