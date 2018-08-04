@@ -9,12 +9,18 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.entity.RenderSnowball;
+import net.minecraft.dispenser.BehaviorProjectileDispense;
+import net.minecraft.dispenser.IPosition;
+import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntitySnowball;
+import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
@@ -121,6 +127,19 @@ public class Moonball {
         if (event.getSide().isClient()) {
             registerItemColors();
         }
+        
+        BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(MOONBALL_ITEM, new BehaviorProjectileDispense() {
+
+            @Override
+            protected IProjectile getProjectileEntity(World worldIn, IPosition position, ItemStack stackIn) {
+                return new EntityMoonball(worldIn, position.getX(), position.getY(), position.getZ(), stackIn.getMetadata());
+            }
+            
+            @Override
+            protected float getProjectileVelocity() {
+                return 1.25F;
+            }
+        });
     }
 
     @SideOnly(Side.CLIENT)

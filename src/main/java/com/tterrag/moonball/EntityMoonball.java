@@ -44,6 +44,11 @@ public class EntityMoonball extends EntityThrowable implements IEntityAdditional
         super(world, thrower);
         this.colorMeta = colorMeta;
     }
+    
+    public EntityMoonball(World world, double x, double y, double z, int colorMeta) {
+        super(world, x, y, z);
+        this.colorMeta = colorMeta;
+    }
 
     @Override
     public void onUpdate() {
