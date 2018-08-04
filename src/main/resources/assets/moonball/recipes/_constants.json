@@ -1,0 +1,10 @@
+[
+    {
+        "ingredient": {
+            "type": "forge:ore_dict",
+            "ore": "slimeball"
+        },
+        "name": "SLIMEBALL"
+    }
+]
+ 

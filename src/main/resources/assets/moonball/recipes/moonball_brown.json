@@ -1,0 +1,14 @@
+{
+  "result": {
+    "item": "moonball:moonball",
+    "data": 12
+  },
+  "ingredients": [
+    { "item": "#SLIMEBALL" },
+    {
+      "item": "minecraft:wool",
+      "data": 12
+    }
+  ],
+  "type": "minecraft:crafting_shapeless"
+}

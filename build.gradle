@@ -1,0 +1,88 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT' }
+}
+plugins {
+ 	id 'com.matthewprenger.cursegradle' version '1.0.11'
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false');
+ext.buildnumber = System.getenv().BUILD_NUMBER ?: 'custom';
+
+group = 'com.tterrag.moonball'
+archivesBaseName = "Moonball"
+version = "${mod_version}-${buildnumber}"
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+minecraft {
+    version = "${minecraft_version}-${forge_version}"
+	mappings = 'snapshot_20170802'
+	
+    runDir = 'run'
+	
+	replaceIn "Moonball.java"
+	replace "@VERSION@", project.version
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.info'
+        include '**/*.properties'
+
+        // replace version and mcversion
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude '**/*.info'
+        exclude '**/*.properties'
+    }
+}
+
+repositories {
+	maven {
+		name = "Progwml6 maven"
+		url = "http://dvs1.progwml6.com/files/maven"
+	}
+}
+
+dependencies {
+  deobfProvided "mezz.jei:jei_${minecraft_version}:${jei_version}:api"
+  runtime "mezz.jei:jei_${minecraft_version}:${jei_version}"
+}
+
+tasks.curseforge.enabled = !dev && project.hasProperty('curseforge_key')
+
+curseforge {
+    if (project.hasProperty('curseforge_key')) {
+        apiKey = project.curseforge_key
+    }
+
+    project {
+        id = project.project_id
+        changelogType = 'html'
+        changelog = System.getenv('CHANGELOG')
+        if (changelog == null || 'none'.equals(changelog)) {
+        	changelog = getChangelog() ?: ''
+        	changelogType = 'text'
+        }
+        releaseType = project.release_type
+        mainArtifact(jar) {
+            displayName = "Moonball ${mod_version}"
+        }
+    }
+}
+
