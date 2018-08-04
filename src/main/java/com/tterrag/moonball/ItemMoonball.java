@@ -31,6 +31,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @ParametersAreNonnullByDefault
 public class ItemMoonball extends Item {
+    
+    private static final int FLAVOR_COUNT = 4;
 
     public ItemMoonball() {
         this.setCreativeTab(CreativeTabs.MISC);
@@ -56,7 +58,7 @@ public class ItemMoonball extends Item {
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(TextFormatting.ITALIC + I18n.format(getUnlocalizedName() + ".flavortext"));
+        tooltip.add(TextFormatting.ITALIC + I18n.format(getUnlocalizedName() + ".flavortext." + (stack.hashCode() % FLAVOR_COUNT)));
     }
 
     @Override

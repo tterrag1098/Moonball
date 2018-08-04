@@ -15,7 +15,10 @@ item.moonball.moonball.green.name=Green Moonball
 item.moonball.moonball.red.name=Red Moonball
 item.moonball.moonball.black.name=Black Moonball
 
-item.moonball.moonball.flavortext=MUN-BAH!
+item.moonball.moonball.flavortext.0=MUN-BAH!
+item.moonball.moonball.flavortext.1=MOO-BUH!
+item.moonball.moonball.flavortext.2=MOOONBAALL!
+item.moonball.moonball.flavortext.3=MUH-BUH!
 
 entity.moonball.name=Moonball
 
