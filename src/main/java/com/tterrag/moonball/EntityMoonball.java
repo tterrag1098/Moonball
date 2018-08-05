@@ -95,7 +95,7 @@ public class EntityMoonball extends EntityThrowable implements IEntityAdditional
             }
             IBlockState hit = world.getBlockState(hitLoc);
             float hardness = hit.getBlockHardness(world, hitLoc);
-            if (hardness < velSq * 0.5) {
+            if (hardness >= 0 && hardness < velSq * 0.5) {
                 if (!getEntityWorld().isRemote) {
                     world.destroyBlock(hitLoc, true);
                 }
