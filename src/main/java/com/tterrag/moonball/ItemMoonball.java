@@ -1,10 +1,13 @@
 package com.tterrag.moonball;
 
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -32,7 +35,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @ParametersAreNonnullByDefault
 public class ItemMoonball extends Item {
     
-    private static final int FLAVOR_COUNT = 4;
+    private static final int FLAVOR_COUNT = 6;
 
     public ItemMoonball() {
         this.setCreativeTab(CreativeTabs.MISC);
@@ -53,12 +56,20 @@ public class ItemMoonball extends Item {
     public String getUnlocalizedName(ItemStack stack) {
         return super.getUnlocalizedName(stack) + "." + EnumDyeColor.values()[MathHelper.clamp(stack.getMetadata(), 0, 15)].getName();
     }
+    
+    private static final UUID uuid = UUID.fromString("659f26f3-93b1-4cd4-a0b6-3391b1d4ae74");
+    private static final Random flavorRand = new Random();
 
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        tooltip.add(TextFormatting.ITALIC + I18n.format(getUnlocalizedName() + ".flavortext." + (stack.hashCode() % FLAVOR_COUNT)));
+        flavorRand.setSeed(stack.hashCode());
+        String suffix = String.valueOf(flavorRand.nextInt(FLAVOR_COUNT));
+        if (flavorRand.nextInt(250) == 0 || (Minecraft.getMinecraft().getSession().getProfile().getId().equals(uuid) && flavorRand.nextBoolean())) {
+            suffix = "rare";
+        }
+        tooltip.add(TextFormatting.ITALIC + I18n.format(getUnlocalizedName() + ".flavortext." + suffix));
     }
 
     @Override
