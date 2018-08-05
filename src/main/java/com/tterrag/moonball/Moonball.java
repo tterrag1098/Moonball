@@ -12,6 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderSnowball;
 import net.minecraft.dispenser.BehaviorProjectileDispense;
 import net.minecraft.dispenser.IPosition;
@@ -30,6 +32,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -130,11 +133,17 @@ public class Moonball {
 
     @SideOnly(Side.CLIENT)
     private void registerEntityRenderers() {
-        RenderingRegistry.registerEntityRenderingHandler(EntityMoonball.class, manager -> new RenderSnowball<EntityMoonball>(manager, MOONBALL_ITEM, Minecraft.getMinecraft().getRenderItem()) {
-
+        RenderingRegistry.registerEntityRenderingHandler(EntityMoonball.class, new IRenderFactory<EntityMoonball>() {
+            
             @Override
-            public ItemStack getStackToRender(EntityMoonball entity) {
-                return new ItemStack(item, 1, entity.colorMeta);
+            public Render createRenderFor(RenderManager manager) {
+                return new RenderSnowball<EntityMoonball>(manager, MOONBALL_ITEM, Minecraft.getMinecraft().getRenderItem()) {
+
+                    @Override
+                    public ItemStack getStackToRender(EntityMoonball entity) {
+                        return new ItemStack(item, 1, entity.colorMeta);
+                    }
+                };
             }
         });
     }
