@@ -5,6 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.vecmath.Vector3d;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -87,13 +88,6 @@ public class EntityMoonball extends EntityThrowable implements IEntityAdditional
             }
         } else if (result.typeOfHit == Type.BLOCK) {
 
-            if (velSq < 0.1) {
-                if (!getEntityWorld().isRemote) {
-                    setDead();
-                    return;
-                }
-            }
-
             World world = getEntityWorld();
             BlockPos hitLoc = result.getBlockPos();
             if (hitLoc == null) {
@@ -110,41 +104,53 @@ public class EntityMoonball extends EntityThrowable implements IEntityAdditional
                 this.motionY *= damping;
                 this.motionZ *= damping;
             }
-            // High angles of incidence (Near 180 degrees) can cause the ball to get stuck in a wall
-            // To fix this, I add some "ghost" velocity in the direction normal to the wall
-            Vector3d motionVec = new Vector3d(this.motionX, this.motionY, this.motionZ);
-            Vec3i dirVec = result.sideHit.getDirectionVec();
-            Vector3d bounceVec = new Vector3d(dirVec.getX(), dirVec.getY(), dirVec.getZ());
-            motionVec.x *= bounceVec.x;
-            motionVec.y *= bounceVec.y;
-            motionVec.z *= bounceVec.z;
-            // This is a very shallow bounce, so give it some extra "kick"
-            if (motionVec.lengthSquared() < 0.001) {
-                motionVec.scale(4);
-                this.motionX += motionVec.x;
-                this.motionY += motionVec.y;
-                this.motionZ += motionVec.z;
+            
+            if (hit.getCollisionBoundingBox(world, hitLoc) != Block.NULL_AABB) {
+                
+                // Despawn if going too slow
+                if (velSq < 0.1) {
+                    if (!getEntityWorld().isRemote) {
+                        setDead();
+                        return;
+                    }
+                }
+                
+                // High angles of incidence (Near 180 degrees) can cause the ball to get stuck in a wall
+                // To fix this, I add some "ghost" velocity in the direction normal to the wall
+                Vector3d motionVec = new Vector3d(this.motionX, this.motionY, this.motionZ);
+                Vec3i dirVec = result.sideHit.getDirectionVec();
+                Vector3d bounceVec = new Vector3d(dirVec.getX(), dirVec.getY(), dirVec.getZ());
+                motionVec.x *= bounceVec.x;
+                motionVec.y *= bounceVec.y;
+                motionVec.z *= bounceVec.z;
+                // This is a very shallow bounce, so give it some extra "kick"
+                if (motionVec.lengthSquared() < 0.001) {
+                    motionVec.scale(4);
+                    this.motionX += motionVec.x;
+                    this.motionY += motionVec.y;
+                    this.motionZ += motionVec.z;
+                }
+    
+                bounceCount++;
+                bouncing = true;
+                this.newX = this.motionX;
+                this.newY = this.motionY;
+                this.newZ = this.motionZ;
+                switch (result.sideHit.getAxis()) {
+                case X:
+                    this.newX = -this.newX;
+                    break;
+                case Y:
+                    this.newY = -this.newY;
+                    break;
+                case Z:
+                    this.newZ = -this.newZ;
+                    break;
+                }
+                this.motionX = 0;
+                this.motionY = 0;
+                this.motionZ = 0;
             }
-
-            bounceCount++;
-            bouncing = true;
-            this.newX = this.motionX;
-            this.newY = this.motionY;
-            this.newZ = this.motionZ;
-            switch (result.sideHit.getAxis()) {
-            case X:
-                this.newX = -this.newX;
-                break;
-            case Y:
-                this.newY = -this.newY;
-                break;
-            case Z:
-                this.newZ = -this.newZ;
-                break;
-            }
-            this.motionX = 0;
-            this.motionY = 0;
-            this.motionZ = 0;
         }
     }
 
