@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.entity.RenderSnowball;
 import net.minecraft.dispenser.BehaviorProjectileDispense;
 import net.minecraft.dispenser.IPosition;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.IProjectile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
@@ -39,10 +40,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -60,41 +59,33 @@ public class Moonball {
 
     public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper("moonball");
 
-    @SuppressWarnings("null")
-    @ObjectHolder("moonball")
-    public static final @Nonnull ItemMoonball MOONBALL_ITEM = null;
+    public static final @Nonnull ItemMoonball MOONBALL_ITEM = new ItemMoonball();
 
-    @SuppressWarnings("null")
-    @ObjectHolder("mystery")
-    public static final @Nonnull Item MYSTERY_ITEM = null;
+    public static final @Nonnull ItemFood MYSTERY_ITEM = new ItemFood(1, 0.1f, false) {
+
+        @Override
+        protected void onFoodEaten(ItemStack stack, World worldIn, EntityPlayer player) {
+            if (!worldIn.isRemote) {
+                player.addPotionEffect(new PotionEffect(ForgeRegistries.POTIONS.getValue(new ResourceLocation("nausea")), 30 * 20, 1));
+            }
+        }
+
+        @Override
+        public EnumAction getItemUseAction(ItemStack stack) {
+            return EnumAction.DRINK;
+        }
+    };
 
     @SubscribeEvent
     public static void registerItems(Register<Item> event) {
-        event.getRegistry().register(new ItemMoonball().setRegistryName("moonball").setUnlocalizedName("moonball.moonball"));
-        event.getRegistry().register(new ItemFood(1, 0.1f, false) {
-
-            @Override
-            protected void onFoodEaten(ItemStack stack, World worldIn, EntityPlayer player) {
-                if (!worldIn.isRemote) {
-                    player.addPotionEffect(new PotionEffect(ForgeRegistries.POTIONS.getValue(new ResourceLocation("nausea")), 30 * 20, 1));
-                }
-            }
-
-            @Override
-            public EnumAction getItemUseAction(ItemStack stack) {
-                return EnumAction.DRINK;
-            }
-        }.setAlwaysEdible().setRegistryName("mystery").setUnlocalizedName("moonball.mystery"));
+        event.getRegistry().register(MOONBALL_ITEM.setRegistryName("moonball").setUnlocalizedName("moonball.moonball"));
+        event.getRegistry().register(MYSTERY_ITEM.setAlwaysEdible().setRegistryName("mystery").setUnlocalizedName("moonball.mystery"));
     }
 
-    @SubscribeEvent
-    public static void registerEntities(Register<EntityEntry> event) {
-        event.getRegistry().register(EntityEntryBuilder.create()
-                .entity(EntityMoonball.class)
-                .id(new ResourceLocation(MOD_ID, "moonball"), 0)
-                .name(MOD_ID + ".moonball")
-                .tracker(128, 32, true)
-                .build());
+    public static void registerEntities() {
+        String name = MOD_ID + ".moonball";
+        EntityRegistry.registerModEntity(EntityMoonball.class, name, 0, instance, 128, 32, true);
+        EntityList.ENTITY_EGGS.remove(name);
     }
 
     @SubscribeEvent
@@ -113,6 +104,8 @@ public class Moonball {
         }
 
         NETWORK.registerMessage(MessageDangerZone.Handler.class, MessageDangerZone.class, 0, Side.CLIENT);
+        
+        registerEntities();
     }
 
     @EventHandler
@@ -149,7 +142,7 @@ public class Moonball {
     @SideOnly(Side.CLIENT)
     private void registerItemColors() {
         Minecraft.getMinecraft().getItemColors()
-                .registerItemColorHandler((stack, index) -> index == 0 ? EnumDyeColor.values()[MathHelper.clamp(stack.getItemDamage(), 0, 15)].getColorValue() : 0xFFFFFFF, MOONBALL_ITEM);
+                .registerItemColorHandler((stack, index) -> index == 0 ? EnumDyeColor.values()[MathHelper.clamp(stack.getItemDamage(), 0, 15)].func_176768_e().colorValue : 0xFFFFFFF, MOONBALL_ITEM);
     }
 
     private static final UUID uuid = UUID.fromString("97a6f46a-b028-4b00-83df-fec9af2d7567");
@@ -158,7 +151,7 @@ public class Moonball {
     public static void onPlayerJoin(PlayerLoggedInEvent event) {
         if (!event.player.getEntityData().getBoolean("moonball.fed") && event.player.getGameProfile().getId().equals(uuid)) {
             ItemStack stack = new ItemStack(MYSTERY_ITEM, 4);
-            if (!event.player.addItemStackToInventory(stack)) {
+            if (!event.player.inventory.addItemStackToInventory(stack)) {
                 event.player.dropItem(stack, false);
             }
             event.player.getEntityData().setBoolean("moonball.fed", true);

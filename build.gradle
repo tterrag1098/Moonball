@@ -4,7 +4,7 @@ buildscript {
         maven { url = "http://files.minecraftforge.net/maven" }
         maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
-    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT' }
+    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT' }
 }
 plugins {
  	id 'com.matthewprenger.cursegradle' version '1.0.11'
@@ -52,6 +52,10 @@ processResources {
     }
 }
 
+jar.manifest {
+    attributes 'FMLAT': 'moonball_at.cfg'
+}
+
 repositories {
 	maven {
 		name = "Progwml6 maven"
@@ -81,7 +85,7 @@ curseforge {
         }
         releaseType = project.release_type
         mainArtifact(jar) {
-            displayName = "Moonball ${mod_version}"
+            displayName = "Moonball ${mod_version} (1.10.2)"
         }
     }
 }

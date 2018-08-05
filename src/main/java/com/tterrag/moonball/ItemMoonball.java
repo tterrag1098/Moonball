@@ -4,12 +4,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -23,7 +21,6 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
@@ -43,10 +40,7 @@ public class ItemMoonball extends Item {
     }
 
     @Override
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-        if (!isInCreativeTab(tab)) {
-            return;
-        }
+    public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> items) {
         for (int i = 0; i < EnumDyeColor.values().length; i++) {
             items.add(new ItemStack(this, 1, i));
         }
@@ -62,8 +56,8 @@ public class ItemMoonball extends Item {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean debug) {
+        super.addInformation(stack, player, tooltip, debug);
         flavorRand.setSeed(stack.hashCode());
         String suffix = String.valueOf(flavorRand.nextInt(FLAVOR_COUNT));
         if (flavorRand.nextInt(250) == 0 || (Minecraft.getMinecraft().getSession().getProfile().getId().equals(uuid) && flavorRand.nextBoolean())) {
@@ -110,7 +104,7 @@ public class ItemMoonball extends Item {
         EntityPlayer player = entityLiving instanceof EntityPlayer ? (EntityPlayer) entityLiving : null;
 
         if (player != null && !player.capabilities.isCreativeMode) {
-            stack.shrink(1);
+            stack.stackSize--;
         }
 
         worldIn.playSound((EntityPlayer) null, entityLiving.posX, entityLiving.posY, entityLiving.posZ, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F,
@@ -128,7 +122,7 @@ public class ItemMoonball extends Item {
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+    public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World worldIn, EntityPlayer playerIn, EnumHand handIn) {
         ItemStack itemstack = playerIn.getHeldItem(handIn);
         playerIn.setActiveHand(handIn);
         return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemstack);
